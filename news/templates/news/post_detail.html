@@ -11,6 +11,14 @@
     <p>Last updated: {{ post.updated_at }}</p>
 
     <hr>
+    <div>
+        <button id="like-btn" data-post-id="{{ post.id }}" data-action="like">Like</button>
+        <button id="dislike-btn" data-post-id="{{ post.id }}" data-action="dislike">Dislike</button>
+        <span id="like-count">{{ post.likes.filter(like_type=1).count }}</span> Likes,
+        <span id="dislike-count">{{ post.likes.filter(like_type=-1).count }}</span> Dislikes
+    </div>
+
+    <hr>
     <h2>Comments</h2>
     <ul>
         {% for comment in comments %}

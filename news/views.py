@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import NewsPost, comment
-from .forms import NewsPostForm, CommentForm 
+from .models import NewsPost, Comment
+from .forms import NewsPostForm, CommentForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 # Create your views here.
 
 def news_list(request):
@@ -38,3 +40,27 @@ def post_detail(request, post_id):
         'form': form,
     }
     return render(request, 'news/post_detail.html', context)
+
+@require_POST
+def toggle_like(request, post_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required.'}, status=403)
+
+    post = get_object_or_404(NewsPost, id=post_id)
+    action = request.POST.get('action')
+    if action not in ['like', 'dislike']:
+        return JsonResponse({'error': 'Invalid action.'}, status=400)
+
+    like_type = 1 if action == 'like' else -1
+    like_obj, created = Like.objects.get_or_create(user=request.user, post=post, defaults={'like_type': like_type})
+
+    if not created:
+        if like_obj.like_type == like_type:
+            like_obj.delete()  # Toggle off
+        else:
+            like_obj.like_type = like_type
+            like_obj.save()
+    
+    like_count = post.likes.filter(like_type=1).count()
+    dislike_count = post.likes.filter(like_type=-1).count()
+    return JsonResponse({'like_count': like_count, 'dislike_count': dislike_count})

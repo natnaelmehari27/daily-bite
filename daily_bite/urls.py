@@ -22,4 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', news_views.news_list, name='home'),
     path('news/', include('news.urls')),
+    path('create/', news_views.create_news_post, name='create_news_post'),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]

@@ -1,14 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}News List - Daily Bite{% endblock %}
+
+{% block content %}
+  <h1>Latest News</h1>
+  {% for post in posts %}
+    <div class="post">
+      <h2>{{ post.title }}</h2>
+      <p>{{ post.content|truncatewords:20 }}</p>
+      <p>Posted on: {{ post.date_posted }}</p>
+      <!-- Like/Dislike section, etc. -->
+    </div>
+  {% empty %}
+    <p>No posts available.</p>
+  {% endfor %}
+{% endblock %}
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>News Posts</title>
-</head>
-<body>
-    <h1>News Posts</h1>
+    <style>
+      .post {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .like-container {
+        margin-top: 10px;
+      }
+      .like-btn,
+      .dislike-btn {
+        padding: 5px 10px;
+        margin-right: 5px;
+        cursor: pointer;
+      }
+      .counts {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+ <body>
+    <h1>New posts</h1>
     <a href="{% url 'create_news_post' %}">Create New Post</a>
-    
-    
-</body>
+    {% for post in posts %}
+  <div class="post">
+      <h2>{{ post.title }}</h2>
+      <p>{{ post.content|truncatewords:20 }}</p>
+      <p>Posted on: {{ post.date_posted }}</p>
+      <!-- Like/Dislike Buttons -->
+      <div class="like-container">
+          <button class="like-btn" data-post-id="{{ post.id }}" data-action="like">Like</button>
+          <button class="dislike-btn" data-post-id="{{ post.id }}" data-action="dislike">Dislike</button>
+          <span class="counts">
+              {{ post.like_count }} Likes, {{ post.dislike_count }} Dislikes
+          </span>
+      </div>
+      <a href="{% url 'post_detail' post.id %}">Read more</a>
+  </div>
+  {% empty %}
+  <p>No posts available.</p>
+  {% endfor %}
+
+    <script>
+      // Example JavaScript to attach event listeners on the like/dislike buttons:
+      document.querySelectorAll(".like-btn, .dislike-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+          const postId = this.getAttribute("data-post-id");
+          const action = this.getAttribute("data-action");
+          fetch("/post/" + postId + "/toggle_like/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "action=" + action,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Update the counts on the page
+              const postDiv = this.closest(".post");
+              postDiv.querySelector(".counts").innerText =
+                data.like_count + " Likes, " + data.dislike_count + " Dislikes";
+            });
+        });
+      });
+    </script>
+  </body>
 </html>
