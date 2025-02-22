@@ -1,10 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import NewsPost 
 from .forms import NewsPostForm
 # Create your views here.
 
 def news_list(request):
-    posts = NewsPost.objects.all().order_by('-created_at')
+    posts = NewsPost.objects.all().order_by('-date_posted')
     return render(request, 'news/news_list.html', {'posts': posts})
 
 def create_news_post(request):
