@@ -1,44 +1,99 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>{{ post.title }}</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>{{ post.title }}</h1>
     <p>{{ post.content }}</p>
     <p>Category: {{ post.category }}</p>
     <p>Posted on: {{ post.date_posted }}</p>
     <p>Last updated: {{ post.updated_at }}</p>
 
-    <hr>
+    <hr />
     <div>
-        <button id="like-btn" data-post-id="{{ post.id }}" data-action="like">Like</button>
-        <button id="dislike-btn" data-post-id="{{ post.id }}" data-action="dislike">Dislike</button>
-        <span id="like-count">{{ post.likes.filter(like_type=1).count }}</span> Likes,
-        <span id="dislike-count">{{ post.likes.filter(like_type=-1).count }}</span> Dislikes
+      <button id="like-btn" data-post-id="{{ post.id }}" data-action="like">
+        Like
+      </button>
+      <button
+        id="dislike-btn"
+        data-post-id="{{ post.id }}"
+        data-action="dislike"
+      >
+        Dislike
+      </button>
+      <span id="like-count">{{ post.likes.filter(like_type=1).count }}</span>
+      Likes,
+      <span id="dislike-count"
+        >{{ post.likes.filter(like_type=-1).count }}</span
+      >
+      Dislikes
     </div>
 
-    <hr>
+    <hr />
     <h2>Comments</h2>
     <ul>
-        {% for comment in comments %}
-            <li>
-                <strong>{{ comment.user }}</strong> on {{ comment.date_posted }}:
-                <p>{{ comment.content }}</p>
-            </li>
-        {% empty %}
-            <li>No comments yet.</li>
-        {% endfor %}
+      {% for comment in comments %}
+      <li>
+        <strong>{{ comment.user }}</strong> on {{ comment.date_posted }}:
+        <p>{{ comment.content }}</p>
+      </li>
+      {% empty %}
+      <li>No comments yet.</li>
+      {% endfor %}
     </ul>
 
-    <hr>
+    <hr />
     <h3>Add a Comment</h3>
     <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Post Comment</button>
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Post Comment</button>
     </form>
-    
+
     <a href="{% url 'news_list' %}">Back to News List</a>
-</body>
+
+    <script>
+      document
+        .getElementById("like-btn")
+        .addEventListener("click", function () {
+          var postId = this.getAttribute("data-post-id");
+          var action = this.getAttribute("data-action");
+          fetch("/post/" + postId + "/toggle_like/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "action=" + action,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("like-count").innerText = data.like_count;
+              document.getElementById("dislike-count").innerText =
+                data.dislike_count;
+            });
+        });
+
+      document
+        .getElementById("dislike-btn")
+        .addEventListener("click", function () {
+          var postId = this.getAttribute("data-post-id");
+          var action = this.getAttribute("data-action");
+          fetch("/post/" + postId + "/toggle_like/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: "action=" + action,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("like-count").innerText = data.like_count;
+              document.getElementById("dislike-count").innerText =
+                data.dislike_count;
+            });
+        });
+    </script>
+  </body>
 </html>

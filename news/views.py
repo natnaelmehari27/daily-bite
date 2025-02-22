@@ -3,10 +3,14 @@ from .models import NewsPost, Comment
 from .forms import NewsPostForm, CommentForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db.models import Count, Q
 # Create your views here.
 
 def news_list(request):
-    posts = NewsPost.objects.all().order_by('-date_posted')
+    posts = NewsPost.objects.annotate(
+        like_count=Count('likes', filter=Q(likes__like_type=1)),
+        dislike_count=Count('likes', filter=Q(likes__like_type=-1))
+    ).order_by('-date_posted')
     return render(request, 'news/news_list.html', {'posts': posts})
 
 def create_news_post(request):
