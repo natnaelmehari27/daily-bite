@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <h1>{{ post.title }}</h1>
+    <p>{{ post.content }}</p>
+    <p>Category: {{ post.category }}</p>
+    <p>Posted on: {{ post.date_posted }}</p>
+    <p>Last updated: {{ post.updated_at }}</p>
+
+    <hr>
+    <h2>Comments</h2>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>{{ comment.user }}</strong> on {{ comment.date_posted }}:
+                <p>{{ comment.content }}</p>
+            </li>
+        {% empty %}
+            <li>No comments yet.</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+    <h3>Add a Comment</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Post Comment</button>
+    </form>
+    
+    <a href="{% url 'news_list' %}">Back to News List</a>
+</body>
+</html>
